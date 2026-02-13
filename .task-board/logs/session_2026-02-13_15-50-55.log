@@ -1,0 +1,14 @@
+=====================================
+=== SESSION START: 2026-02-13_15-50-55 ===
+Time: 2026-02-13T15:50:55+03:00
+Working dir: /Users/aagrigore1/src/skill-confluence-manager
+=====================================
+
+[15:50:55.899] [INFO] task-board-tui version dev
+[15:50:55.899] [INFO] Config loaded, refresh interval: 10s
+[15:51:01.855] [INFO] [ACTION] command_palette: opened
+[15:51:03.118] [DEBUG] [KEY] down
+[15:51:03.899] [DEBUG] [KEY] enter
+[15:51:03.900] [INFO] command.ExecuteMsg received: cmd="agents" args=""
+[15:51:03.900] [INFO] executeCommand: cmd="agents" args=""
+[15:51:03.900] [INFO] [CMD] /agents → opening agents screen

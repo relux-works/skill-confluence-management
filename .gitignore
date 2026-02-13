@@ -1,0 +1,33 @@
+# Temp / debug
+.temp/
+
+# OS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.xcworkspace/
+xcuserdata/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build
+dist/
+build/
+*.o
+*.so
+*.dylib
+/confluence-mgmt
+
+# Secrets
+.env
+.env.*
+credentials.json
+*.pem
+*.key
