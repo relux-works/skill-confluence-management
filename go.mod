@@ -1,9 +1,9 @@
-module github.com/ivalx1s/skill-confluence-manager
+module github.com/relux-works/skill-confluence-management
 
 go 1.25.5
 
 require (
-	github.com/ivalx1s/skill-agent-facing-api/agentquery v1.2.0
+	github.com/relux-works/skill-agent-facing-api/agentquery v1.2.0
 	github.com/spf13/cobra v1.10.2
 	github.com/zalando/go-keyring v0.2.6
 	gopkg.in/yaml.v3 v3.0.1

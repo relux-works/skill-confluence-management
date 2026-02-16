@@ -5,8 +5,8 @@ package query
 import (
 	"fmt"
 
-	"github.com/ivalx1s/skill-agent-facing-api/agentquery"
-	"github.com/ivalx1s/skill-confluence-manager/internal/confluence"
+	"github.com/relux-works/skill-agent-facing-api/agentquery"
+	"github.com/relux-works/skill-confluence-management/internal/confluence"
 )
 
 // treeNode is the recursive structure returned by the tree() operation.

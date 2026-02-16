@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/ivalx1s/skill-confluence-manager/internal/config"
-	"github.com/ivalx1s/skill-confluence-manager/internal/confluence"
+	"github.com/relux-works/skill-confluence-management/internal/config"
+	"github.com/relux-works/skill-confluence-management/internal/confluence"
 	"github.com/zalando/go-keyring"
 )
 

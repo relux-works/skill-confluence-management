@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ivalx1s/skill-confluence-manager/internal/config"
+	"github.com/relux-works/skill-confluence-management/internal/config"
 	"github.com/spf13/cobra"
 )
 

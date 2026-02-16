@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ivalx1s/skill-agent-facing-api/agentquery"
-	"github.com/ivalx1s/skill-agent-facing-api/agentquery/cobraext"
-	"github.com/ivalx1s/skill-confluence-manager/internal/query"
+	"github.com/relux-works/skill-agent-facing-api/agentquery"
+	"github.com/relux-works/skill-agent-facing-api/agentquery/cobraext"
+	"github.com/relux-works/skill-confluence-management/internal/query"
 	"github.com/spf13/cobra"
 )
 

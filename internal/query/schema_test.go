@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ivalx1s/skill-agent-facing-api/agentquery"
-	"github.com/ivalx1s/skill-confluence-manager/internal/confluence"
+	"github.com/relux-works/skill-agent-facing-api/agentquery"
+	"github.com/relux-works/skill-confluence-management/internal/confluence"
 )
 
 // newTestServer creates an httptest server and a connected Confluence client.
