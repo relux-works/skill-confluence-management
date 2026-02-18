@@ -18,10 +18,12 @@ var configSetCmd = &cobra.Command{
 	Long: `Set a configuration value.
 
 Keys:
-  space  — active Confluence space key (e.g. DEV)
+  space            — active Confluence space key (e.g. DEV)
+  tls_skip_verify  — skip TLS cert verification: true/false (for corporate CAs)
 
 Examples:
-  confluence-mgmt config set space DEV`,
+  confluence-mgmt config set space DEV
+  confluence-mgmt config set tls_skip_verify true`,
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		key := args[0]
@@ -41,8 +43,15 @@ Examples:
 			}
 			fmt.Fprintf(out, "Active space set to %s\n", value)
 
+		case "tls_skip_verify":
+			skip := value == "true" || value == "1" || value == "yes"
+			if err := cfgMgr.SetTLSSkipVerify(skip); err != nil {
+				return err
+			}
+			fmt.Fprintf(out, "TLS skip verify set to %v\n", skip)
+
 		default:
-			return fmt.Errorf("unknown config key %q (supported: space)", key)
+			return fmt.Errorf("unknown config key %q (supported: space, tls_skip_verify)", key)
 		}
 
 		return nil
@@ -71,6 +80,7 @@ var configShowCmd = &cobra.Command{
 		fmt.Fprintf(out, "  instance type:  %s\n", valueOrNone(cfg.InstanceType))
 		fmt.Fprintf(out, "  auth type:      %s\n", valueOrNone(cfg.AuthType))
 		fmt.Fprintf(out, "  active space:   %s\n", valueOrNone(cfg.ActiveSpace))
+		fmt.Fprintf(out, "  tls skip verify: %v\n", cfg.TLSSkipVerify)
 
 		return nil
 	},

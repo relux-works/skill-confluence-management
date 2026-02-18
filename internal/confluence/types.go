@@ -22,11 +22,12 @@ const (
 
 // Config holds the configuration needed to connect to a Confluence instance.
 type Config struct {
-	BaseURL      string       // e.g. "https://mycompany.atlassian.net/wiki" (Cloud) or "https://confluence.company.com" (Server)
-	Email        string       // Required for Basic auth (Cloud)
-	Token        string       // API token (Basic) or PAT (Bearer)
-	InstanceType InstanceType // "cloud" or "server"
-	AuthType     AuthType     // "basic" or "bearer"
+	BaseURL            string       // e.g. "https://mycompany.atlassian.net/wiki" (Cloud) or "https://confluence.company.com" (Server)
+	Email              string       // Required for Basic auth (Cloud)
+	Token              string       // API token (Basic) or PAT (Bearer)
+	InstanceType       InstanceType // "cloud" or "server"
+	AuthType           AuthType     // "basic" or "bearer"
+	InsecureSkipVerify bool         // Skip TLS certificate verification (corporate CAs)
 }
 
 // --- Error Types ---

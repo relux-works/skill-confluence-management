@@ -17,8 +17,9 @@ var (
 
 // Global flags.
 var (
-	flagSpace  string
-	flagFormat string
+	flagSpace    string
+	flagFormat   string
+	flagInsecure bool
 )
 
 func main() {
@@ -48,6 +49,7 @@ var versionCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringVar(&flagSpace, "space", "", "Confluence space key (overrides config)")
 	rootCmd.PersistentFlags().StringVar(&flagFormat, "format", "json", "Output format: json, compact, or text")
+	rootCmd.PersistentFlags().BoolVar(&flagInsecure, "insecure", false, "Skip TLS certificate verification (for corporate CAs)")
 
 	rootCmd.AddCommand(versionCmd)
 }

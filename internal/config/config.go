@@ -17,10 +17,11 @@ const defaultConfigFile = "config.yaml"
 
 // Config holds the global user configuration for confluence-mgmt.
 type Config struct {
-	ActiveSpace  string `yaml:"active_space"`
-	InstanceURL  string `yaml:"instance_url,omitempty"`
-	InstanceType string `yaml:"instance_type,omitempty"` // "cloud" or "server"
-	AuthType     string `yaml:"auth_type,omitempty"`     // "basic" or "bearer"
+	ActiveSpace    string `yaml:"active_space"`
+	InstanceURL    string `yaml:"instance_url,omitempty"`
+	InstanceType   string `yaml:"instance_type,omitempty"`    // "cloud" or "server"
+	AuthType       string `yaml:"auth_type,omitempty"`        // "basic" or "bearer"
+	TLSSkipVerify  bool   `yaml:"tls_skip_verify,omitempty"` // skip TLS certificate verification (corporate CAs)
 }
 
 // DefaultConfig returns a Config with sensible defaults.
@@ -139,5 +140,16 @@ func (m *ConfigManager) SetAuthType(authType string) error {
 	}
 
 	cfg.AuthType = authType
+	return m.saveConfig(cfg)
+}
+
+// SetTLSSkipVerify updates the TLS skip verify setting.
+func (m *ConfigManager) SetTLSSkipVerify(skip bool) error {
+	cfg, err := m.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	cfg.TLSSkipVerify = skip
 	return m.saveConfig(cfg)
 }

@@ -40,10 +40,11 @@ func buildConfluenceClientFromConfig() (*confluence.Client, error) {
 	}
 
 	return confluence.NewClient(confluence.Config{
-		BaseURL:      creds.InstanceURL,
-		Email:        creds.Email,
-		Token:        creds.APIToken,
-		InstanceType: confluence.InstanceType(cfg.InstanceType),
-		AuthType:     confluence.AuthType(cfg.AuthType),
+		BaseURL:            creds.InstanceURL,
+		Email:              creds.Email,
+		Token:              creds.APIToken,
+		InstanceType:       confluence.InstanceType(cfg.InstanceType),
+		AuthType:           confluence.AuthType(cfg.AuthType),
+		InsecureSkipVerify: flagInsecure || cfg.TLSSkipVerify,
 	})
 }
