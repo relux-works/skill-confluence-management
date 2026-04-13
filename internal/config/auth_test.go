@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"path/filepath"
 	"testing"
 )
 
@@ -62,7 +63,7 @@ func TestCredentials_Validate(t *testing.T) {
 	}{
 		{"valid", validCreds(), false},
 		{"missing URL", Credentials{Email: "a@b.com", APIToken: "tok"}, true},
-		{"missing email", Credentials{InstanceURL: "https://x.atlassian.net/wiki", APIToken: "tok"}, true},
+		{"missing email for basic auth", Credentials{InstanceURL: "https://x.atlassian.net/wiki", APIToken: "tok", AuthType: "basic"}, true},
 		{"missing token", Credentials{InstanceURL: "https://x.atlassian.net/wiki", Email: "a@b.com"}, true},
 		{"bearer no email ok", Credentials{InstanceURL: "https://conf.co", APIToken: "pat", AuthType: "bearer"}, false},
 	}
@@ -97,7 +98,7 @@ func TestKeychainStore_SaveAndLoad(t *testing.T) {
 
 func TestKeychainStore_LoadNotFound(t *testing.T) {
 	store, _ := newTestStore()
-	_, err := store.Load("https://nonexistent.atlassian.net")
+	_, err := store.Load("https://nonexistent.atlassian.net/wiki")
 	if !errors.Is(err, ErrCredentialsNotFound) {
 		t.Errorf("error = %v, want ErrCredentialsNotFound", err)
 	}
@@ -125,8 +126,110 @@ func TestKeychainStore_UsesAtlassianMgmtServiceName(t *testing.T) {
 
 	_ = store.Save(creds)
 
-	// Verify it's stored under "atlassian-mgmt"
 	if _, ok := mk.store["atlassian-mgmt"][creds.InstanceURL]; !ok {
 		t.Error("credentials should be stored under 'atlassian-mgmt' service")
+	}
+}
+
+func TestDefaultSourceForGOOS(t *testing.T) {
+	tests := []struct {
+		goos string
+		want Source
+	}{
+		{goos: "darwin", want: SourceKeychain},
+		{goos: "windows", want: SourceKeychain},
+		{goos: "linux", want: SourceEnvOrFile},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.goos, func(t *testing.T) {
+			if got := DefaultSourceForGOOS(tt.goos); got != tt.want {
+				t.Fatalf("DefaultSourceForGOOS(%q) = %q, want %q", tt.goos, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFileStore_SaveLoadDelete(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "auth.json")
+	store := NewFileStore(path)
+	creds := validCreds()
+
+	if err := store.Save(creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	loaded, err := store.Load(creds.InstanceURL)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if loaded.InstanceURL != creds.InstanceURL {
+		t.Fatalf("InstanceURL = %q, want %q", loaded.InstanceURL, creds.InstanceURL)
+	}
+	if loaded.Email != creds.Email {
+		t.Fatalf("Email = %q, want %q", loaded.Email, creds.Email)
+	}
+	if loaded.APIToken != creds.APIToken {
+		t.Fatalf("APIToken = %q, want %q", loaded.APIToken, creds.APIToken)
+	}
+
+	if err := store.Delete(creds.InstanceURL); err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+
+	if _, err := store.Load(creds.InstanceURL); !errors.Is(err, ErrCredentialsNotFound) {
+		t.Fatalf("Load() after Delete() error = %v, want ErrCredentialsNotFound", err)
+	}
+}
+
+func TestResolverResolveAutoFallsBackToFileOnWindows(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "auth.json")
+	store := NewFileStore(path)
+	creds := validCreds()
+	if err := store.Save(creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	resolver := NewResolverWithAuthFilePath(Runtime{
+		GOOS:   "windows",
+		Getenv: func(string) string { return "" },
+	}, nil, path)
+
+	resolved, err := resolver.Resolve(SourceAuto, creds.InstanceURL)
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	if resolved.Source != SourceEnvOrFile {
+		t.Fatalf("Source = %q, want %q", resolved.Source, SourceEnvOrFile)
+	}
+	if resolved.ResolvedFrom != "file" {
+		t.Fatalf("ResolvedFrom = %q, want file", resolved.ResolvedFrom)
+	}
+}
+
+func TestResolverResolveAutoFallsBackToEnvOnDarwin(t *testing.T) {
+	creds := validCreds()
+	env := map[string]string{
+		EnvInstanceURL: creds.InstanceURL,
+		EnvEmail:       creds.Email,
+		EnvAPIToken:    creds.APIToken,
+	}
+
+	resolver := NewResolverWithAuthFilePath(Runtime{
+		GOOS: "darwin",
+		Getenv: func(key string) string {
+			return env[key]
+		},
+	}, nil, filepath.Join(t.TempDir(), "auth.json"))
+
+	resolved, err := resolver.Resolve(SourceAuto, "")
+	if err != nil {
+		t.Fatalf("Resolve() error = %v", err)
+	}
+	if resolved.Source != SourceEnvOrFile {
+		t.Fatalf("Source = %q, want %q", resolved.Source, SourceEnvOrFile)
+	}
+	if resolved.ResolvedFrom != "env" {
+		t.Fatalf("ResolvedFrom = %q, want env", resolved.ResolvedFrom)
 	}
 }

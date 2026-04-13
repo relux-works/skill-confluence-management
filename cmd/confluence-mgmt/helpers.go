@@ -8,12 +8,16 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-// getCredentialStore returns the keychain-backed credential store.
-var getCredentialStore = func() config.CredentialStore {
-	return config.NewKeychainStore(
-		keyring.Set,
-		keyring.Get,
-		keyring.Delete,
+// getCredentialResolver returns the platform-aware credential resolver.
+// Tests can override it.
+var getCredentialResolver = func() *config.Resolver {
+	return config.NewResolver(
+		config.Runtime{},
+		config.NewKeychainStore(
+			keyring.Set,
+			keyring.Get,
+			keyring.Delete,
+		),
 	)
 }
 
@@ -29,22 +33,40 @@ func buildConfluenceClientFromConfig() (*confluence.Client, error) {
 		return nil, fmt.Errorf("reading config: %w", err)
 	}
 
-	if cfg.InstanceURL == "" {
-		return nil, fmt.Errorf("not configured: run 'confluence-mgmt auth' first")
+	resolver := getCredentialResolver()
+	instanceURL := resolver.ResolveInstanceURL(cfg.InstanceURL)
+	if instanceURL == "" {
+		return nil, fmt.Errorf("not configured: run 'confluence-mgmt auth set-access' first")
 	}
 
-	store := getCredentialStore()
-	creds, err := store.Load(cfg.InstanceURL)
+	resolved, err := resolver.Resolve(config.SourceAuto, instanceURL)
 	if err != nil {
-		return nil, fmt.Errorf("loading credentials: %w (run 'confluence-mgmt auth' to configure)", err)
+		return nil, fmt.Errorf("loading credentials: %w (run 'confluence-mgmt auth set-access' to configure)", err)
 	}
 
-	return confluence.NewClient(confluence.Config{
-		BaseURL:            creds.InstanceURL,
-		Email:              creds.Email,
-		Token:              creds.APIToken,
-		InstanceType:       confluence.InstanceType(cfg.InstanceType),
-		AuthType:           confluence.AuthType(cfg.AuthType),
+	instanceType := cfg.InstanceType
+	if instanceType == "" {
+		instanceType = string(inferInstanceType(resolved.Credentials.InstanceURL))
+	}
+
+	client, err := confluence.NewClient(confluence.Config{
+		BaseURL:            resolved.Credentials.InstanceURL,
+		Email:              resolved.Credentials.Email,
+		Token:              resolved.Credentials.APIToken,
+		InstanceType:       confluence.InstanceType(instanceType),
+		AuthType:           confluence.AuthType(resolved.Credentials.AuthType),
 		InsecureSkipVerify: flagInsecure || cfg.TLSSkipVerify,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.InstanceType == "" {
+		_ = cfgMgr.SetInstanceType(instanceType)
+	}
+	if cfg.AuthType == "" && resolved.ResolvedFrom != "env" {
+		_ = cfgMgr.SetAuthType(resolved.Credentials.AuthType)
+	}
+
+	return client, nil
 }
