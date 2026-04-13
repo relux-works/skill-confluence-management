@@ -31,10 +31,13 @@ Agent-facing CLI (`confluence-mgmt`) for Confluence Cloud and Server/DC.
 
 ```bash
 # Auth (Cloud — same token as Jira)
-confluence-mgmt auth --instance https://company.atlassian.net/wiki --email user@company.com --token API_TOKEN
+confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@company.com --token API_TOKEN
 
 # Auth (Server/DC — separate PAT)
-confluence-mgmt auth --instance https://confluence.company.com --token PAT_TOKEN
+confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT_TOKEN
+
+# Validate the stored credentials
+confluence-mgmt auth whoami
 
 # Set active space
 confluence-mgmt config set space DEV
@@ -113,8 +116,16 @@ confluence-mgmt q 'spaces(){minimal}; list(space=DEV){default}; get(12345){full}
 
 - **Cloud:** Uses Atlassian API token (same as Jira). Email + token pair.
 - **Server/DC:** Uses Personal Access Token (product-specific, NOT the same as Jira PAT).
-- Credentials stored in OS keychain under service `atlassian-mgmt` (shared with jira-mgmt).
-- Auto-detection: `*.atlassian.net` = Cloud, else Server/DC.
+- Credential source names are stable across platforms: `auto`, `keychain`, `env_or_file`.
+- `auto` defaults to system keychain on macOS and Windows, with `env_or_file` fallback via `auth.json`.
+- Instance type is inferred from the URL: `*.atlassian.net` = Cloud, else Server/DC.
+
+Useful auth commands:
+```bash
+confluence-mgmt auth resolve
+confluence-mgmt auth clean
+confluence-mgmt auth config-path
+```
 
 ## CQL Quick Reference
 

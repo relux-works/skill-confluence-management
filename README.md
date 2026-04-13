@@ -8,7 +8,7 @@ Supports both **Confluence Cloud** (v2 API) and **Server/DC** (v1 API) with auto
 
 - **Dual API**: v2 for Cloud CRUD, v1 for CQL search and Server/DC
 - **DSL query layer**: Token-efficient reads with field presets (`minimal`, `default`, `overview`, `full`)
-- **Shared keychain**: Uses `atlassian-mgmt` OS keychain — same credentials as `jira-mgmt`
+- **Cross-platform auth**: `auto | keychain | env_or_file` with desktop-first defaults
 - **Auto-detection**: Cloud vs Server/DC based on URL pattern
 - **VPN hint**: Network errors suggest checking corporate VPN
 - **Batch queries**: Multiple operations in one call via `;` separator
@@ -16,10 +16,17 @@ Supports both **Confluence Cloud** (v2 API) and **Server/DC** (v1 API) with auto
 ## Setup
 
 ```bash
-./scripts/setup.sh
+# macOS / Linux shells
+./setup.sh
+
+# Windows PowerShell
+.\setup.ps1
+
+# Verify installed binary
+confluence-mgmt version
 ```
 
-This builds the binary and symlinks to `~/.local/bin/confluence-mgmt`. Also creates skill symlinks for Claude Code and Codex CLI.
+This builds the binary, installs it to the user-local bin dir, refreshes the installed skill artifact, writes install metadata, and refreshes Claude/Codex skill links.
 
 ### Manual build
 
@@ -31,16 +38,17 @@ go build -o confluence-mgmt ./cmd/confluence-mgmt/
 
 ```bash
 # Cloud (email + API token)
-confluence-mgmt auth --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
+confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
 
 # Server/DC (Personal Access Token)
-confluence-mgmt auth --instance https://confluence.company.com --token PAT
+confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT
 
-# Interactive
-confluence-mgmt auth
+# Canonical live auth probe
+confluence-mgmt auth whoami
 ```
 
-Credentials are stored in the OS keychain under `atlassian-mgmt` service name. If you already authenticated via `jira-mgmt`, the same credentials work automatically.
+Credential source names are stable across platforms: `auto`, `keychain`, `env_or_file`.
+`auto` prefers system secret storage on macOS and Windows, with `env_or_file` as explicit fallback.
 
 ## Commands
 
@@ -115,6 +123,7 @@ internal/confluence/         HTTP client, types, operations
 internal/query/              DSL parser and executor
 agents/skills/confluence-management/  Skill packaging (SKILL.md + references)
 scripts/                     Build and setup scripts
+setup.sh / setup.ps1         Root setup wrappers
 .spec/                       Project specification
 .research/                   API research documents
 ```
@@ -131,5 +140,13 @@ go test ./...
 |------|---------|----------|
 | `confluence-mgmt` | CLI binary | `~/.local/bin/confluence-mgmt` |
 | `go test` | Unit tests | `internal/*/` |
-| `scripts/setup.sh` | Build + install + symlink | project root |
+| `setup.sh` / `setup.ps1` | Build + install + verify | project root |
 | `task-board` | Project management | `.task-board/` |
+
+## Runtime Paths
+
+- Config: `os.UserConfigDir()/confluence-mgmt/config.yaml`
+- Auth fallback file: `os.UserConfigDir()/confluence-mgmt/auth.json`
+- Install state: `os.UserConfigDir()/confluence-mgmt/install.json`
+- Installed binary: `~/.local/bin/confluence-mgmt`
+- Installed skill artifact: `~/.agents/skills/confluence-management`

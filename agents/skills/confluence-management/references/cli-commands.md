@@ -13,13 +13,22 @@ Setup authentication.
 
 ```bash
 # Cloud
-confluence-mgmt auth --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
+confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
 
 # Server/DC
-confluence-mgmt auth --instance https://confluence.company.com --token PAT
+confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT
 
 # Interactive
 confluence-mgmt auth
+```
+
+Canonical validation and debug flow:
+
+```bash
+confluence-mgmt auth whoami
+confluence-mgmt auth resolve
+confluence-mgmt auth config-path
+confluence-mgmt auth clean
 ```
 
 ## config
