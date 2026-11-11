@@ -11,18 +11,28 @@
 
 Setup authentication.
 
+Setup and cleanup change local authentication state; run them only when the
+operator requests it. The examples use reserved `.example` placeholders.
+Use the approved real URL for setup: a Cloud site has an `.atlassian.net` host
+and `/wiki` path. The operator supplies credentials through the admitted secret
+flow; agents must not copy real tokens into arguments or logs.
+
 ```bash
 # Cloud
-confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
+confluence-mgmt auth set-access --instance https://confluence-cloud.example/wiki --email user@company.example --token TOKEN
 
 # Server/DC
-confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT
+confluence-mgmt auth set-access --instance https://confluence-server.example --token PAT
 
 # Interactive
 confluence-mgmt auth
 ```
 
 Canonical validation and debug flow:
+
+`version` is the executable readiness check. `auth whoami` performs a live
+request and may refresh non-secret instance/auth-type configuration. `auth
+clean` removes saved authentication; it is not a read-only diagnostic.
 
 ```bash
 confluence-mgmt auth whoami

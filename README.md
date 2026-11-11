@@ -15,6 +15,23 @@ Supports both **Confluence Cloud** (v2 API) and **Server/DC** (v1 API) with auto
 
 ## Setup
 
+### Curator skill package
+
+Curator profiles select `agents/skills/confluence-management` from this Git
+repository at an exact revision. That directory includes the schema 3
+`agent-skill.json`, instructions, references, LICENSE and NOTICE. It is a
+context package with no exported commands or package-managed network access;
+the independently installed CLI uses the operator's approved instance and
+credential store. Documentation endpoints use reserved `.example` placeholders.
+They are replaced with the real approved URL only during requested setup.
+
+Use the validated Curator profile/install route for managed agent environments.
+The legacy standalone setup below also changes global skill links; do not run
+it to repair or install a Curator-managed skill. Reuse an admitted CLI, check
+`confluence-mgmt version`, and coordinate missing host tools separately.
+
+### Standalone CLI setup
+
 ```bash
 # macOS / Linux shells
 ./setup.sh
@@ -38,10 +55,10 @@ go build -o confluence-mgmt ./cmd/confluence-mgmt/
 
 ```bash
 # Cloud (email + API token)
-confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@co.com --token TOKEN
+confluence-mgmt auth set-access --instance https://confluence-cloud.example/wiki --email user@company.example --token TOKEN
 
 # Server/DC (Personal Access Token)
-confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT
+confluence-mgmt auth set-access --instance https://confluence-server.example --token PAT
 
 # Canonical live auth probe
 confluence-mgmt auth whoami

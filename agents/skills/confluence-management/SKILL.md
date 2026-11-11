@@ -27,14 +27,38 @@ triggers:
 
 Agent-facing CLI (`confluence-mgmt`) for Confluence Cloud and Server/DC.
 
+## Package and access boundary
+
+This directory is a Curator context package. It supplies instructions and
+references, with no exported commands or package-managed network access.
+The `confluence-mgmt` CLI is installed separately through the host's admitted
+tool owner; reuse its existing credentials and configured instance. This skill
+does not authorize authentication changes, remote writes or access to another
+instance. Create, update, delete and label operations require the owner's request.
+
+The `.example` addresses below are documentation placeholders, not endpoints
+to contact. Replace them with the approved instance when authentication setup
+is explicitly requested. A real Cloud site uses its `.atlassian.net` host and
+`/wiki` path; Server/DC uses the approved corporate URL. Instance type is
+detected from that real URL, not from these placeholders. Never paste tokens
+into agent prompts, command arguments or logs; the operator supplies credentials
+through the admitted secret-storage/authentication flow.
+
 ## Quick Start
 
+For an already configured host, start with `confluence-mgmt version`. Use
+`auth whoami` only within an admitted live probe: it contacts the configured
+instance and can refresh non-secret instance/auth-type configuration. It does
+not print token values. Do not run authentication setup or cleanup as readiness
+checks.
+
 ```bash
-# Auth (Cloud — same token as Jira)
-confluence-mgmt auth set-access --instance https://company.atlassian.net/wiki --email user@company.com --token API_TOKEN
+# Auth setup examples: operator-run only, when requested
+# Cloud
+confluence-mgmt auth set-access --instance https://confluence-cloud.example/wiki --email user@company.example --token API_TOKEN
 
 # Auth (Server/DC — separate PAT)
-confluence-mgmt auth set-access --instance https://confluence.company.com --token PAT_TOKEN
+confluence-mgmt auth set-access --instance https://confluence-server.example --token PAT_TOKEN
 
 # Validate the stored credentials
 confluence-mgmt auth whoami
